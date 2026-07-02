@@ -123,48 +123,31 @@ The system supports two distinct roles: `customer` and `admin`. Access to API ro
 
 ---
 
-## ☁️ Deployment Guidelines
+## ☁️ Deployment Guidelines (Vercel-Only Monorepo)
 
-The project includes a multi-stage `Dockerfile` and is fully configured for deployment on platforms like Render, Railway, Google Cloud Run, or Heroku.
+DineFlow is configured to deploy **both the frontend and backend together on Vercel** as a single serverless monorepo project. Render, Railway, and Docker configurations are completely removed.
 
-### Multi-Stage Docker Strategy
-* **Stage 1 (Frontend Builder)**: Installs npm packages in the React project and compiles code into static HTML/JS/CSS assets inside `frontend/dist`.
-* **Stage 2 (Runner)**: Installs production-only dependencies in the Node.js project, copies the compiled static frontend, and runs the Express server on port `8080` (or `PORT` provided by host).
-* **Serving Strategy**: The Express backend serves the React frontend statically in production mode:
-  ```javascript
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
-  });
-  ```
-  This creates a **single unified container** deployment, eliminating CORS errors and hosting costs for separate frontends.
+### How it Works on Vercel
+* **Frontend**: The React application is built statically.
+* **Backend**: The Express server is compiled and run as a **Vercel Serverless Function** via the `/api` route mapping.
+* **Routing**: The [vercel.json](file:///C:/Users/Palli%20Sai%20Pavan/.gemini/antigravity-ide/scratch/restaurant-reservation-system/vercel.json) file automatically routes all `/api/*` traffic to the serverless entrypoint in [api/index.js](file:///C:/Users/Palli%20Sai%20Pavan/.gemini/antigravity-ide/scratch/restaurant-reservation-system/api/index.js), while Vercel serves the compiled React assets for all other routes.
 
-### Deploying to Render (Unified Container)
-1. Create a new **Web Service** on Render pointing to your repository.
-2. Select **Docker** as the Runtime environment.
-3. Set the Environment Variables:
-   * `MONGODB_URI` (Your MongoDB Atlas connection URI)
-   * `JWT_SECRET` (A strong random string)
-   * `NODE_ENV` = `production`
-4. Render will automatically build the multi-stage Docker image and deploy your service to a public URL.
+### Step-by-Step Vercel Deployment
 
-### Deploying Frontend to Vercel (Split Architecture)
-You can host the React frontend on Vercel and connect it to your backend (deployed on Render, Railway, etc.):
-
-1. **Deploy the Backend**:
-   - Deploy the `backend` directory to Render or Railway as a standard Node web service.
-   - Set the required environment variables (`MONGODB_URI`, `JWT_SECRET`, etc.).
-   
-2. **Deploy the Frontend to Vercel**:
-   - Log in to [Vercel](https://vercel.com) and import your repository.
-   - Configure the Vercel project settings:
-     - **Framework Preset**: `Vite`
-     - **Root Directory**: `frontend`
+1. **Push your code to GitHub**: Ensure all changes are committed and pushed to your GitHub repository.
+2. **Deploy on Vercel**:
+   - Log in to your [Vercel Dashboard](https://vercel.com) and click **Add New > Project**.
+   - Import your GitHub repository.
+   - Configure the Project Settings:
+     - **Framework Preset**: Select `Vite` (Vercel should auto-detect this).
+     - **Root Directory**: `.` (the project root folder, leave as default).
      - **Build Command**: `npm run build`
-     - **Output Directory**: `dist`
-   - Under **Environment Variables**, add:
-     - `VITE_API_URL` = Your deployed backend's public URL (e.g., `https://your-backend-api.onrender.com`).
-   - Click **Deploy**.
+     - **Output Directory**: `frontend/dist` *(IMPORTANT: You must override the Output Directory to `frontend/dist` in settings so Vercel finds the React build output).*
+   - Under **Environment Variables**, add the following keys:
+     - `MONGODB_URI`: Your standard MongoDB Atlas connection URI (e.g. `mongodb+srv://...`).
+     - `JWT_SECRET`: A strong, random security secret key.
+     - `NODE_ENV`: `production`
+3. Click **Deploy**. Vercel will automatically build your frontend, deploy your Express API as serverless, and host the unified application under a single public `.vercel.app` URL!
 
 ---
 
