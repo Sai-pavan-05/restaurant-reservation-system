@@ -7,7 +7,7 @@
     "install:frontend": "npm install --prefix frontend",
     "install-all": "npm run install:backend && npm run install:frontend",
     "build:frontend": "npm run build --prefix frontend",
-    "build": "npm run build:frontend",
+    "build": "node scripts/build.js",
     "start": "node backend/server.js",
     "seed": "npm run seed --prefix backend",
     "dev:backend": "npm run dev --prefix backend",
