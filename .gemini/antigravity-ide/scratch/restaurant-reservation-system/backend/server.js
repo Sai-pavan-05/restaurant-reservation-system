@@ -10,16 +10,25 @@ const seedData = require('./utils/seeder');
 dotenv.config();
 
 // Connect to Database
-connectDB().then(() => {
-  // Auto-seed database if empty
-  seedData();
-});
-
 const app = express();
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Database connection middleware for Serverless compatibility
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection middleware error:', err.message);
+    res.status(500).json({
+      success: false,
+      error: 'Database connection failed: ' + err.message
+    });
+  }
+});
 
 // API Health check
 app.get('/api/health', (req, res) => {

@@ -1,32 +1,52 @@
 const mongoose = require('mongoose');
 
-let mongod = null;
+let isConnecting = null;
 
 const connectDB = async () => {
-  let dbUri = process.env.MONGODB_URI;
-
-  // Fall back to in-memory server if URI is empty, default localhost, or a read-only SQL endpoint
-  if (!dbUri || dbUri.includes('127.0.0.1:27017') || dbUri.includes('localhost') || dbUri.includes('atlas-sql')) {
-    console.log('No active standard MongoDB Atlas connection URI detected.');
-    console.log('Spinning up a local in-memory MongoDB Server for zero-configuration startup...');
-    try {
-      const { MongoMemoryServer } = require('mongodb-memory-server');
-      mongod = await MongoMemoryServer.create();
-      dbUri = mongod.getUri();
-      console.log(`✔ In-Memory MongoDB running at: ${dbUri}`);
-    } catch (err) {
-      console.error('❌ Failed to start in-memory MongoDB server:', err.message);
-      console.error('Please configure a standard MONGODB_URI in backend/.env');
-      process.exit(1);
-    }
+  // If already connected, return connection
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+  
+  // If connection is in progress, reuse the same promise
+  if (isConnecting) {
+    return isConnecting;
   }
 
-  try {
+  isConnecting = (async () => {
+    let dbUri = process.env.MONGODB_URI;
+    const isServerless = !!process.env.VERCEL;
+
+    if (!dbUri) {
+      if (isServerless || process.env.NODE_ENV === 'production') {
+        throw new Error('Database MONGODB_URI is missing. Please configure it in your Vercel Project Environment Variables.');
+      }
+      
+      // Local development fallback: spin up an in-memory MongoDB
+      console.log('No MONGODB_URI detected. Spinning up local in-memory MongoDB Server...');
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      const mongod = await MongoMemoryServer.create();
+      dbUri = mongod.getUri();
+      console.log(`✔ In-Memory MongoDB running at: ${dbUri}`);
+    } else if (dbUri.includes('atlas-sql')) {
+      throw new Error('MONGODB_URI is pointing to an Atlas SQL endpoint. Standard Mongoose requires a cluster connection string starting with mongodb+srv://');
+    }
+
     const conn = await mongoose.connect(dbUri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    
+    // Auto-seed if database tables or users are empty
+    const seedData = require('../utils/seeder');
+    await seedData();
+    
+    return conn;
+  })();
+
+  try {
+    const res = await isConnecting;
+    return res;
+  } finally {
+    isConnecting = null;
   }
 };
 
