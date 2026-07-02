@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
 
 const AdminDashboard = ({ token }) => {
   const [activeTab, setActiveTab] = useState('reservations');
@@ -38,7 +39,7 @@ const AdminDashboard = ({ token }) => {
       const url = filterDate 
         ? `/api/reservations?date=${filterDate}`
         : '/api/reservations';
-      const res = await fetch(url, {
+      const res = await fetch(`${API_BASE}${url}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -54,7 +55,7 @@ const AdminDashboard = ({ token }) => {
   const fetchTables = async () => {
     setError('');
     try {
-      const res = await fetch('/api/tables', {
+      const res = await fetch(`${API_BASE}/api/tables`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -70,7 +71,7 @@ const AdminDashboard = ({ token }) => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/reservations/${reservationId}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/${reservationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -99,7 +100,7 @@ const AdminDashboard = ({ token }) => {
         timeSlot: reservation.timeSlot,
         guestsCount: reservation.guestsCount.toString()
       });
-      const res = await fetch(`/api/reservations/available-tables?${queryParams}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/available-tables?${queryParams}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -128,7 +129,7 @@ const AdminDashboard = ({ token }) => {
         timeSlot: slotVal,
         guestsCount: guestsVal.toString()
       });
-      const res = await fetch(`/api/reservations/available-tables?${queryParams}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/available-tables?${queryParams}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -160,7 +161,7 @@ const AdminDashboard = ({ token }) => {
     setSuccess('');
     
     try {
-      const res = await fetch(`/api/reservations/${editingReservation._id}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/${editingReservation._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +194,7 @@ const AdminDashboard = ({ token }) => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/tables', {
+      const res = await fetch(`${API_BASE}/api/tables`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +227,7 @@ const AdminDashboard = ({ token }) => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/tables/${tableId}`, {
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +254,7 @@ const AdminDashboard = ({ token }) => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/tables/${tableId}`, {
+      const res = await fetch(`${API_BASE}/api/tables/${tableId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

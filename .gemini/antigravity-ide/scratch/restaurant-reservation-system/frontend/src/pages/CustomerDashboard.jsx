@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
 
 const CustomerDashboard = ({ token, user }) => {
   const [reservations, setReservations] = useState([]);
@@ -25,7 +26,7 @@ const CustomerDashboard = ({ token, user }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/reservations', {
+      const res = await fetch(`${API_BASE}/api/reservations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -55,7 +56,7 @@ const CustomerDashboard = ({ token, user }) => {
         guestsCount: guestsCount.toString()
       });
 
-      const res = await fetch(`/api/reservations/available-tables?${queryParams}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/available-tables?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -94,7 +95,7 @@ const CustomerDashboard = ({ token, user }) => {
         body.tableId = selectedTableId;
       }
 
-      const res = await fetch('/api/reservations', {
+      const res = await fetch(`${API_BASE}/api/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +124,7 @@ const CustomerDashboard = ({ token, user }) => {
     setActionLoading(reservationId);
 
     try {
-      const res = await fetch(`/api/reservations/${reservationId}`, {
+      const res = await fetch(`${API_BASE}/api/reservations/${reservationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

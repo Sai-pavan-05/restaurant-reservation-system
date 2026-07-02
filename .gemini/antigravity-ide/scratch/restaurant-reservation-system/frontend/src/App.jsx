@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import CustomerDashboard from './pages/CustomerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import { API_BASE } from './config';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -20,7 +21,7 @@ function App() {
       }
 
       try {
-        const res = await fetch('/api/auth/me', {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -139,7 +139,7 @@ The project includes a multi-stage `Dockerfile` and is fully configured for depl
   ```
   This creates a **single unified container** deployment, eliminating CORS errors and hosting costs for separate frontends.
 
-### Deploying to Render
+### Deploying to Render (Unified Container)
 1. Create a new **Web Service** on Render pointing to your repository.
 2. Select **Docker** as the Runtime environment.
 3. Set the Environment Variables:
@@ -147,6 +147,24 @@ The project includes a multi-stage `Dockerfile` and is fully configured for depl
    * `JWT_SECRET` (A strong random string)
    * `NODE_ENV` = `production`
 4. Render will automatically build the multi-stage Docker image and deploy your service to a public URL.
+
+### Deploying Frontend to Vercel (Split Architecture)
+You can host the React frontend on Vercel and connect it to your backend (deployed on Render, Railway, etc.):
+
+1. **Deploy the Backend**:
+   - Deploy the `backend` directory to Render or Railway as a standard Node web service.
+   - Set the required environment variables (`MONGODB_URI`, `JWT_SECRET`, etc.).
+   
+2. **Deploy the Frontend to Vercel**:
+   - Log in to [Vercel](https://vercel.com) and import your repository.
+   - Configure the Vercel project settings:
+     - **Framework Preset**: `Vite`
+     - **Root Directory**: `frontend`
+     - **Build Command**: `npm run build`
+     - **Output Directory**: `dist`
+   - Under **Environment Variables**, add:
+     - `VITE_API_URL` = Your deployed backend's public URL (e.g., `https://your-backend-api.onrender.com`).
+   - Click **Deploy**.
 
 ---
 
